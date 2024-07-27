@@ -11,6 +11,10 @@ export class LogoService implements IBasicService<Logo> {
     @InjectModel(Logo.name) private logoModel: Model<Logo>
   ) { }
 
+  async checkExistLogo(query: Object) {
+    return await this.logoModel.countDocuments(query);
+  }
+
   async create(data: Logo) {
     await this.logoModel.updateOne({}, data, { upsert: true });
     const album = await this.logoModel.findOne();
@@ -40,22 +44,21 @@ export class LogoService implements IBasicService<Logo> {
 
   async getDetail(query: Object) {
     const album = await this.logoModel.findOne(query);
-
     return album;
   }
 
-  async replace(id: string, data: Logo) {
-    const milestone = await this.logoModel.findByIdAndUpdate(id, data, { new: true });
+  async replace(query: Object, data: Logo) {
+    const milestone = await this.logoModel.findOneAndUpdate(query, data, { new: true });
     return milestone;
   }
 
-  async modify(id: string, data: Partial<Logo>) {
-    const milestone = await this.logoModel.findByIdAndUpdate(id, data, { new: true });
+  async modify(query: Object, data: Partial<Logo>) {
+    const milestone = await this.logoModel.findOneAndUpdate(query, data, { new: true });
     return milestone;
   }
 
-  async remove(id: string) {
-    const milestone = await this.logoModel.findByIdAndDelete(id);
+  async remove(query: Object) {
+    const milestone = await this.logoModel.findOneAndDelete(query);
     return milestone;
   }
 }

@@ -6,7 +6,9 @@ import { Album, albumSchema } from './schema/album.schema';
 import { ValidateCreateAlbumGuard } from './guards/validate_create_album.guard';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
-import { Media, mediaSchema } from './schema/media.schema';
+import { ChangeUploadfilesNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
+import { FilesProcessPipe } from 'src/shared/pipes/file_process.pipe';
+import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
 
 @Module({
   imports: [
@@ -15,14 +17,20 @@ import { Media, mediaSchema } from './schema/media.schema';
         name: Album.name,
         schema: albumSchema,
         collection: Album.name.toLowerCase()
-      },
-      {
-        name: Media.name,
-        schema: mediaSchema
       }
     ])
   ],
   controllers: [AlbumController],
-  providers: [AlbumService, ValidateCreateAlbumGuard, ConfigService, AuthGuard],
+  providers: [
+    AlbumService,
+    ValidateCreateAlbumGuard,
+    ConfigService,
+    AuthGuard,
+
+    ChangeUploadfilesNamePipe,
+    FilesProcessPipe,
+    DiskStoragePipe
+  ],
+  exports: [AlbumService]
 })
 export class AlbumModule {}

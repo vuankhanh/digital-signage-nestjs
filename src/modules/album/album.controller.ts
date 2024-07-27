@@ -17,6 +17,9 @@ import { Request } from 'express';
 import { memoryStorageMulterOptions } from 'src/constants/file.constanst';
 import { ChangeUploadfilesNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
 import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
+import { OptionalFilesPipe } from 'src/shared/pipes/optional_file.pipe';
+import { Types } from 'mongoose';
+import { ParseObjectIdArrayPipe } from 'src/shared/pipes/parse_objectId_array.pipe';
 
 @Controller('album')
 export class AlbumController {
@@ -56,19 +59,17 @@ export class AlbumController {
     return await this.albumService.create(albumDoc);
   }
 
-  // @Patch(':id')
-  // @UseGuards(ValidateModifyAlbumGuard)
-  // @UsePipes(ValidationPipe)
-  // @UseInterceptors(
-  //   FilesInterceptor('many-files', null, modificationMulterOptions),
-  //   FormatResponseInterceptor
-  // )
-  // async modify(
-  //   @Param(new ValidationPipe({ whitelist: true })) { id }: MongoIdDto,
-  //   @Body(new ValidationPipe({ transform: true })) body: AlbumModifyDto,
-  //   @UploadedFiles(FilesProcessPipe) medias: Array<IMedia>
-  // ) {
-  //   return await this.albumService.modifyMedias(id, body.filesWillRemove, medias);
-  // }
-
+  @Patch()
+  @UseGuards(ValidateModifyAlbumGuard)
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(
+    FilesInterceptor('many-files', null, memoryStorageMulterOptions),
+    FormatResponseInterceptor
+  )
+  async modify(
+    @Body(new ValidationPipe({ transform: true }), ParseObjectIdArrayPipe) body: AlbumModifyDto,
+    @UploadedFiles(OptionalFilesPipe) medias?: Array<IMedia>
+  ) {
+    return await this.albumService.modifyMedias({}, body.filesWillRemove, medias);
+  }
 }

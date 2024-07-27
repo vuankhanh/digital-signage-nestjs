@@ -6,6 +6,9 @@ import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { Logo, logoSchema } from './schema/logo.schema';
 import { LogoController } from './logo.controller';
+import { ChangeUploadfileNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
+import { FileProcessPipe } from 'src/shared/pipes/file_process.pipe';
+import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
 
 @Module({
   imports: [
@@ -18,6 +21,16 @@ import { LogoController } from './logo.controller';
     ])
   ],
   controllers: [LogoController],
-  providers: [LogoService, ValidateCreateLogoGuard, ConfigService, AuthGuard],
+  providers: [
+    LogoService,
+    ValidateCreateLogoGuard,
+    ConfigService,
+    AuthGuard,
+
+    ChangeUploadfileNamePipe,
+    FileProcessPipe,
+    DiskStoragePipe
+  ],
+  exports: [LogoService]
 })
 export class LogoModule {}

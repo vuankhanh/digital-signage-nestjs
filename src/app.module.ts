@@ -5,10 +5,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MongodbProvider } from './providers/database/mongodb.provider';
-import { AlbumModule } from './modules/album/album.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigProvider } from './providers/common/multer.provider';
+import { AlbumModule } from './modules/album/album.module';
 import { LogoModule } from './modules/logo/logo.module';
+import { HightlightMarketingModule } from './modules/hightlight-marketing/hightlight-marketing.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -26,7 +28,9 @@ import { LogoModule } from './modules/logo/logo.module';
     AuthModule,
     ServerConfigModule,
     AlbumModule,
-    LogoModule
+    LogoModule,
+    HightlightMarketingModule,
+    NotificationModule
   ]
 })
 export class AppModule {

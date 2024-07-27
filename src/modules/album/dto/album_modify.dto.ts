@@ -1,5 +1,6 @@
 import { Transform, Type } from "class-transformer";
-import { IsArray, IsMongoId, IsNumber, IsNumberString, IsOptional, IsString } from "class-validator";
+import { IsArray, IsMongoId, IsNumber, IsOptional, IsString } from "class-validator";
+import mongoose from "mongoose";
 
 export class AlbumModifyDto {
   @IsOptional()
@@ -22,5 +23,5 @@ export class AlbumModifyDto {
   @IsArray()
   @IsMongoId({ each: true })
   @Type(() => String)
-  filesWillRemove: string[];
+  filesWillRemove: Array<string | mongoose.Types.ObjectId>;
 }

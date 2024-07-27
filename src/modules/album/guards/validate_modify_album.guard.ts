@@ -12,15 +12,8 @@ export class ValidateModifyAlbumGuard implements CanActivate {
     context: ExecutionContext,
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const contentType = request.headers['content-type'];
-    const checkContentType: boolean = contentType && contentType.includes('multipart/form-data');
 
-    const id = request.params.id;
-    if (!id || !checkContentType) {
-      return false;
-    }
-
-    const album = await this.albumService.findById(id);
+    const album = await this.albumService.getDetail({});
 
     if (!album) {
       throw new BadRequestException('Album not found');
@@ -32,6 +25,7 @@ export class ValidateModifyAlbumGuard implements CanActivate {
 
     const albumFolder = this.configService.get('folder.album');
     request['customParams'] = {};
+    
     request.customParams.albumFolder = albumFolder;
     request.customParams.relativePath = album.relativePath;
     

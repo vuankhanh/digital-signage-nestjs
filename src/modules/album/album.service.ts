@@ -1,26 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { IBasicService } from 'src/shared/interfaces/basic_service.interface';
 import { Album } from './schema/album.schema';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
-import toNoAccentVnHepler from '../../shared/helpers/convert_vietnamese_to_no_accents.helper';
 import { IMedia } from 'src/shared/interfaces/media.interface';
-import { Media } from './schema/media.schema';
 
 @Injectable()
 export class AlbumService implements IBasicService<Album> {
   constructor(
-    @InjectModel(Media.name) private mediaModel: Model<Media>,
     @InjectModel(Album.name) private albumModel: Model<Album>
   ) { }
 
   async checkExistAlbum(query: Object) {
     return await this.albumModel.countDocuments(query);
-  }
-
-  async findById(id: mongoose.Types.ObjectId) {
-    return await this.albumModel.findById(id);
   }
 
   async create(data: Album) {
@@ -64,28 +57,30 @@ export class AlbumService implements IBasicService<Album> {
     return album;
   }
 
-  async replace(id: string, data: Album) {
-    const milestone = await this.albumModel.findByIdAndUpdate(id, data, { new: true });
+  async replace(query: Object, data: Album) {
+    const milestone = await this.albumModel.findOneAndUpdate(query, data, { new: true });
     return milestone;
   }
 
   async modifyMedias(
-    id: string,
+    query: Object,
     filesWillRemove: Array<mongoose.Types.ObjectId | string>,
     newFiles: Array<IMedia>
   ) {
     const arrPromise: Array<Promise<any>> = [];
 
-    const query = { $set: {} };
+    const parameter = { $set: {} };
 
     if (newFiles.length) {
-      const newItems = await this.mediaModel.insertMany(newFiles);
-      query['$push'] = {
-        media: { $each: newItems }
+      newFiles = newFiles.map(file => {
+        return { ...file, _id: new Types.ObjectId() }
+      })
+      parameter['$push'] = {
+        media: { $each: newFiles }
       }
     }
 
-    const updateAlbum = this.albumModel.findByIdAndUpdate(id, query, { safe: true, new: true });
+    const updateAlbum = this.albumModel.findOneAndUpdate(query, parameter, { safe: true, new: true });
     arrPromise.push(updateAlbum);
 
     if (filesWillRemove?.length) {
@@ -94,22 +89,22 @@ export class AlbumService implements IBasicService<Album> {
           media: { _id: { $in: filesWillRemove } }
         }
       }
-      const removeItem = this.albumModel.findByIdAndUpdate(id, removeValueQuery, { safe: true, new: true });
+      const removeItem = this.albumModel.findOneAndUpdate(query, removeValueQuery, { safe: true, new: true });
       arrPromise.push(removeItem);
     }
 
     await Promise.all(arrPromise);
-    const album = await this.tranformToDetaiData({ _id: new mongoose.Types.ObjectId(id) });
+    const album = await this.tranformToDetaiData({});
     return album;
   }
 
-  async modify(id: string, data: Partial<Album>) {
-    const milestone = await this.albumModel.findByIdAndUpdate(id, data, { new: true });
+  async modify(query: Object, data: Partial<Album>) {
+    const milestone = await this.albumModel.findOneAndUpdate(query, data, { new: true });
     return milestone;
   }
 
-  async remove(id: string) {
-    const milestone = await this.albumModel.findByIdAndDelete(id);
+  async remove(query: Object) {
+    const milestone = await this.albumModel.findOneAndDelete(query);
     return milestone;
   }
 
