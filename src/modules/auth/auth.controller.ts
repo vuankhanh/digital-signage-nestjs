@@ -84,6 +84,7 @@ export class AuthController {
   }
 
   @Post('config')
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   @UseInterceptors(FormatResponseInterceptor)
   config() {

@@ -9,6 +9,7 @@ import { AuthGuard } from 'src/shared/guards/auth.guard';
 import { ChangeUploadfilesNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
 import { FilesProcessPipe } from 'src/shared/pipes/file_process.pipe';
 import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
         schema: albumSchema,
         collection: Album.name.toLowerCase()
       }
-    ])
+    ]),
+    NotificationModule
   ],
   controllers: [AlbumController],
   providers: [

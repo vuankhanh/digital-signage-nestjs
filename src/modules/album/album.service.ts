@@ -64,8 +64,8 @@ export class AlbumService implements IBasicService<Album> {
 
   async modifyMedias(
     query: Object,
-    filesWillRemove: Array<mongoose.Types.ObjectId | string>,
-    newFiles: Array<IMedia>
+    filesWillRemove: Array<mongoose.Types.ObjectId | string> = [],
+    newFiles: Array<IMedia> = []
   ) {
     const arrPromise: Array<Promise<any>> = [];
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ValidateCreateHightlightMarketingGuard } from './guards/validate_create_hightlight-marketing.guard';
 import { ValidateModifyHightlightMarketingGuard } from './guards/validate_modify_hightlight-marketing.guard';
@@ -86,6 +86,13 @@ export class HightlightMarketingController {
     }
 
     return await this.hightlightMarketingService.modify({}, partialHightlightMarketingDoc);
+  }
+
+  @Delete()
+  @UseGuards(AuthGuard, ValidateModifyHightlightMarketingGuard)
+  @UseInterceptors(FormatResponseInterceptor)
+  async remove() {
+    return await this.hightlightMarketingService.remove({});
   }
 
 }

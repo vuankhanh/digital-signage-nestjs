@@ -21,7 +21,12 @@ export class NotificationGateway implements OnGatewayConnection {
     return 'aaaa';
   }
 
-  emitNotification(message: string): void {
-    this.server.emit('notification', message);
+  emitDataChange(route: string, action: 'create' | 'modify' , data: any): void {
+    const message = {
+      route,
+      action,
+      data,
+    };
+    this.server.emit('data_change', message);
   }
 }

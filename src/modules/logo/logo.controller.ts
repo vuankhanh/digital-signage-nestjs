@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ValidateCreateLogoGuard } from './guards/validate_create_logo.guard';
 import { ValidateModifyLogoGuard } from './guards/validate_modify_logo.guard';
@@ -86,6 +86,13 @@ export class LogoController {
     }
 
     return await this.logoService.modify({}, partialLogoDoc);
+  }
+
+  @Delete()
+  @UseGuards(AuthGuard, ValidateModifyLogoGuard)
+  @UseInterceptors(FormatResponseInterceptor)
+  async remove() {
+    return await this.logoService.remove({});
   }
 
 }
