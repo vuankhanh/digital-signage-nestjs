@@ -16,11 +16,13 @@ import { HightlightMarketingService } from './hightlight-marketing.service';
 import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
 import { ChangeUploadfileNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
 import { OptionalFilePipe } from 'src/shared/pipes/optional_file.pipe';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 @Controller('hightlight-marketing')
 export class HightlightMarketingController {
   constructor(
     private readonly hightlightMarketingService: HightlightMarketingService,
+    private readonly notificationGateway: NotificationGateway
   ) { }
 
   @Get()
@@ -53,7 +55,9 @@ export class HightlightMarketingController {
       body.alternateName,
       'image'
     )
-    return await this.hightlightMarketingService.create(albumDoc);
+    const createdHightlightMarketing = await this.hightlightMarketingService.create(albumDoc);
+    this.notificationGateway.emitDataChange('hightlightMarketing', 'create', createdHightlightMarketing);
+    return createdHightlightMarketing;
   }
 
   @Patch()
@@ -85,7 +89,9 @@ export class HightlightMarketingController {
       partialHightlightMarketingDoc.relativePath = relativePath;
     }
 
-    return await this.hightlightMarketingService.modify({}, partialHightlightMarketingDoc);
+    const updatedHightlightMarketing = await this.hightlightMarketingService.modify({}, partialHightlightMarketingDoc);
+    this.notificationGateway.emitDataChange('hightlightMarketing', 'modify', updatedHightlightMarketing);
+    return updatedHightlightMarketing;
   }
 
   @Delete()

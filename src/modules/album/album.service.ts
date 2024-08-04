@@ -5,6 +5,8 @@ import mongoose, { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { IMedia } from 'src/shared/interfaces/media.interface';
+import { Media, MediaDocument } from './schema/media.schema';
+import { SortUtil } from 'src/shared/utils/sort_util';
 
 @Injectable()
 export class AlbumService implements IBasicService<Album> {
@@ -17,6 +19,9 @@ export class AlbumService implements IBasicService<Album> {
   }
 
   async create(data: Album) {
+    data.media = data.media.map(file => {
+      return { ...file, _id: new Types.ObjectId() }
+    });
     const album = new this.albumModel(data);
     await album.save();
     return album;
@@ -62,40 +67,61 @@ export class AlbumService implements IBasicService<Album> {
     return milestone;
   }
 
-  async modifyMedias(
-    query: Object,
-    filesWillRemove: Array<mongoose.Types.ObjectId | string> = [],
+  async addNewFiles(
+    filterQuery: Object,
     newFiles: Array<IMedia> = []
   ) {
-    const arrPromise: Array<Promise<any>> = [];
-
-    const parameter = { $set: {} };
-
-    if (newFiles.length) {
-      newFiles = newFiles.map(file => {
-        return { ...file, _id: new Types.ObjectId() }
-      })
-      parameter['$push'] = {
+    if (!newFiles.length) {
+      throw new Error('No new files to add');
+    }
+    
+    newFiles = newFiles.map(file => {
+      return { ...file, _id: new Types.ObjectId() }
+    })
+    const updateQuery = {
+      $push: {
         media: { $each: newFiles }
       }
-    }
+    };
 
-    const updateAlbum = this.albumModel.findOneAndUpdate(query, parameter, { safe: true, new: true });
-    arrPromise.push(updateAlbum);
+    await this.albumModel.findOneAndUpdate(filterQuery, updateQuery, { safe: true, new: true });
 
-    if (filesWillRemove?.length) {
-      const removeValueQuery = {
-        $pull: {
-          media: { _id: { $in: filesWillRemove } }
-        }
-      }
-      const removeItem = this.albumModel.findOneAndUpdate(query, removeValueQuery, { safe: true, new: true });
-      arrPromise.push(removeItem);
-    }
-
-    await Promise.all(arrPromise);
-    const album = await this.tranformToDetaiData({});
+    const album = await this.tranformToDetaiData(filterQuery);
     return album;
+  }
+
+  async removeFiles(
+    filterQuery: Object,
+    filesWillRemove: Array<string | mongoose.Types.ObjectId> = [],
+  ) {
+    if (!filesWillRemove.length) {
+      throw new Error('No files to remove');
+    }
+
+    const updateQuery = {
+      $pull: {
+        media: { _id: { $in: filesWillRemove } }
+      }
+    }
+
+    await this.albumModel.findOneAndUpdate(filterQuery, updateQuery, { safe: true, new: true });
+
+    const album = await this.tranformToDetaiData(filterQuery);
+    return album;
+  }
+
+  async itemIndexChange(filterQuery: Object, itemIndexChanges: Array<string | mongoose.Types.ObjectId>) {
+    const album = await this.albumModel.findOne(filterQuery);
+    if (!album) {
+      throw new Error('Album not found');
+    }
+
+    album.media = SortUtil.sortDocumentArrayByIndex<Media>(album.media as Array<MediaDocument>, itemIndexChanges);
+
+    await album.save();
+
+    const updatedAlbum = await this.tranformToDetaiData(filterQuery);
+    return updatedAlbum;
   }
 
   async modify(query: Object, data: Partial<Album>) {

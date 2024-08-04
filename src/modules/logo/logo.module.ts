@@ -9,6 +9,7 @@ import { LogoController } from './logo.controller';
 import { ChangeUploadfileNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
 import { FileProcessPipe } from 'src/shared/pipes/file_process.pipe';
 import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
         schema: logoSchema,
         collection: Logo.name.toLowerCase()
       },
-    ])
+    ]),
+    NotificationModule
   ],
   controllers: [LogoController],
   providers: [

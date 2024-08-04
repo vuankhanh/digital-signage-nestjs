@@ -9,7 +9,6 @@ import { Album } from './schema/album.schema';
 import { IMedia } from 'src/shared/interfaces/media.interface';
 import { FormatResponseInterceptor } from 'src/shared/interceptors/format_response.interceptor';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
-import { AlbumModifyDto } from './dto/album_modify.dto';
 import { ValidateModifyAlbumGuard } from './guards/validate_modify_album.guard';
 import { Request } from 'express';
 import { memoryStorageMulterOptions } from 'src/constants/file.constanst';
@@ -19,6 +18,7 @@ import { OptionalFilesPipe } from 'src/shared/pipes/optional_file.pipe';
 import { Types } from 'mongoose';
 import { ParseObjectIdArrayPipe } from 'src/shared/pipes/parse_objectId_array.pipe';
 import { NotificationGateway } from '../notification/notification.gateway';
+import { AlbumModifyItemIndexChangeDto, AlbumModifyRemoveFilesDto } from './dto/album_modify.dto';
 
 @Controller('album')
 export class AlbumController {
@@ -61,18 +61,48 @@ export class AlbumController {
     return createdAlbum;
   }
 
-  @Patch()
+  @Patch('add-new-files')
   @UseGuards(AuthGuard, ValidateModifyAlbumGuard)
   @UsePipes(ValidationPipe)
   @UseInterceptors(
     FilesInterceptor('files', null, memoryStorageMulterOptions),
+    FilesProccedInterceptor,
     FormatResponseInterceptor
   )
-  async modify(
-    @Body(new ValidationPipe({ transform: true }), ParseObjectIdArrayPipe) body: AlbumModifyDto,
-    @UploadedFiles(OptionalFilesPipe) medias?: Array<IMedia>
+  async addNewFiles(
+    @UploadedFiles(ChangeUploadfilesNamePipe, FilesProcessPipe, DiskStoragePipe) medias: Array<IMedia>
   ) {
-    const updatedAlbums = await this.albumService.modifyMedias({}, body.filesWillRemove, medias);
+    const updatedAlbums = await this.albumService.addNewFiles({}, medias);
+    this.notificationGateway.emitDataChange('album', 'modify', updatedAlbums);
+    return updatedAlbums;
+  }
+
+  @Patch('remove-files')
+  @UseGuards(AuthGuard)
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(
+    FormatResponseInterceptor
+  )
+  async removeFiles(
+    @Body(new ValidationPipe({ transform: true }), new ParseObjectIdArrayPipe('filesWillRemove')) body: AlbumModifyRemoveFilesDto,
+  ) {
+    console.log(body);
+    
+    const updatedAlbums = await this.albumService.removeFiles({}, body.filesWillRemove);
+    this.notificationGateway.emitDataChange('album', 'modify', updatedAlbums);
+    return updatedAlbums;
+  }
+
+  @Patch('item-index-change')
+  @UseGuards(AuthGuard)
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(
+    FormatResponseInterceptor
+  )
+  async itemIndexChange(
+    @Body(new ValidationPipe({ transform: true }), new ParseObjectIdArrayPipe('newItemIndexChange')) body: AlbumModifyItemIndexChangeDto,
+  ) {
+    const updatedAlbums = await this.albumService.itemIndexChange({}, body.newItemIndexChange);
     this.notificationGateway.emitDataChange('album', 'modify', updatedAlbums);
     return updatedAlbums;
   }

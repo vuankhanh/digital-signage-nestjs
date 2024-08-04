@@ -16,11 +16,13 @@ import { LogoService } from './logo.service';
 import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
 import { ChangeUploadfileNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
 import { OptionalFilePipe } from 'src/shared/pipes/optional_file.pipe';
+import { NotificationGateway } from '../notification/notification.gateway';
 
 @Controller('logo')
 export class LogoController {
   constructor(
     private readonly logoService: LogoService,
+    private readonly notificationGateway: NotificationGateway
   ) { }
 
   @Get()
@@ -53,7 +55,9 @@ export class LogoController {
       body.alternateName,
       'image'
     )
-    return await this.logoService.create(logoDoc);
+    const createdLogo = await this.logoService.create(logoDoc);
+    this.notificationGateway.emitDataChange('logo', 'create', createdLogo);
+    return createdLogo;
   }
 
   @Patch()
@@ -85,7 +89,9 @@ export class LogoController {
       partialLogoDoc.relativePath = relativePath;
     }
 
-    return await this.logoService.modify({}, partialLogoDoc);
+    const updatedLogo = await this.logoService.modify({}, partialLogoDoc);
+    this.notificationGateway.emitDataChange('logo', 'modify', updatedLogo);
+    return updatedLogo;
   }
 
   @Delete()

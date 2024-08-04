@@ -9,6 +9,7 @@ import { HightlightMarketingController } from './hightlight-marketing.controller
 import { ChangeUploadfileNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
 import { FileProcessPipe } from 'src/shared/pipes/file_process.pipe';
 import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
         schema: hightlightMarketingSchema,
         collection: HightlightMarketing.name.toLowerCase()
       },
-    ])
+    ]),
+    NotificationModule
   ],
   controllers: [HightlightMarketingController],
   providers: [

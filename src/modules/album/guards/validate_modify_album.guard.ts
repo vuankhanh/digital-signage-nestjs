@@ -32,3 +32,18 @@ export class ValidateModifyAlbumGuard implements CanActivate {
     return true;
   }
 }
+
+@Injectable()
+export class ValidateModifyItemIndexchangeAlbumGuard implements CanActivate {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean {
+    const request = context.switchToHttp().getRequest();
+    const { newItemIndexChange } = request.body;
+    if( !newItemIndexChange || newItemIndexChange.length === 0) {
+      throw new BadRequestException('New item index change not found');
+    }
+
+    return true;
+  }
+}

@@ -1,7 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument } from "mongoose";
 import { IMedia } from "src/shared/interfaces/media.interface";
 
 const enumType = ['image', 'video'];
+
+export type MediaDocument = HydratedDocument<Media>;
 
 @Schema({
   timestamps: true

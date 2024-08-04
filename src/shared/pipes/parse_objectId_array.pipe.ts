@@ -1,11 +1,11 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
-import { Types } from 'mongoose';
-import { AlbumModifyDto } from 'src/modules/album/dto/album_modify.dto';
+import mongoose, { Types } from 'mongoose';
 
 @Injectable()
 export class ParseObjectIdArrayPipe implements PipeTransform {
-  transform(value: AlbumModifyDto, metadata: ArgumentMetadata) {
-    value.filesWillRemove = value.filesWillRemove?.map(id => new Types.ObjectId(id))
+  constructor(private readonly propertyTransform: string) { }
+  transform(value: any, metadata: ArgumentMetadata) {
+    value[this.propertyTransform] = value[this.propertyTransform].map((id: string) => new mongoose.Types.ObjectId(id))
     return value;
   }
 }

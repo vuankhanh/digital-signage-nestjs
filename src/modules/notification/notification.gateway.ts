@@ -1,7 +1,11 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer, OnGatewayConnection, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: 'http://localhost:4200',
+  }
+})
 export class NotificationGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
