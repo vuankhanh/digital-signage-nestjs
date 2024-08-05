@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IBasicService } from 'src/shared/interfaces/basic_service.interface';
 import { Album } from './schema/album.schema';
-import mongoose, { Model, Types } from 'mongoose';
+import mongoose, { HydratedDocument, Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { IMedia } from 'src/shared/interfaces/media.interface';
@@ -134,7 +134,7 @@ export class AlbumService implements IBasicService<Album> {
     return milestone;
   }
 
-  private async tranformToDetaiData(conditional: Object) {
+  private async tranformToDetaiData(conditional: Object): Promise<HydratedDocument<Album>> {
     return await this.albumModel.aggregate(
       [
         {

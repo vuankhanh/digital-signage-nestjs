@@ -3,7 +3,7 @@ import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:4200',
+    origin: '*',
   }
 })
 export class NotificationGateway implements OnGatewayConnection {
@@ -25,7 +25,7 @@ export class NotificationGateway implements OnGatewayConnection {
     return 'aaaa';
   }
 
-  emitDataChange(route: string, action: 'create' | 'modify' , data: any): void {
+  emitDataChange(route: 'logo' | 'album' | 'hightlightMarketing', action: 'create' | 'modify' , data: any): void {
     const message = {
       route,
       action,

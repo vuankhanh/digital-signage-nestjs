@@ -14,7 +14,6 @@ import { Request } from 'express';
 import { memoryStorageMulterOptions } from 'src/constants/file.constanst';
 import { ChangeUploadfilesNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
 import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
-import { OptionalFilesPipe } from 'src/shared/pipes/optional_file.pipe';
 import { Types } from 'mongoose';
 import { ParseObjectIdArrayPipe } from 'src/shared/pipes/parse_objectId_array.pipe';
 import { NotificationGateway } from '../notification/notification.gateway';
@@ -86,8 +85,6 @@ export class AlbumController {
   async removeFiles(
     @Body(new ValidationPipe({ transform: true }), new ParseObjectIdArrayPipe('filesWillRemove')) body: AlbumModifyRemoveFilesDto,
   ) {
-    console.log(body);
-    
     const updatedAlbums = await this.albumService.removeFiles({}, body.filesWillRemove);
     this.notificationGateway.emitDataChange('album', 'modify', updatedAlbums);
     return updatedAlbums;
