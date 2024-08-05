@@ -31,7 +31,8 @@ import { NotificationModule } from './modules/notification/notification.module';
     LogoModule,
     HightlightMarketingModule,
     NotificationModule
-  ]
+  ],
+  controllers: []
 })
 export class AppModule {
   logger: Logger = new Logger(AppModule.name);

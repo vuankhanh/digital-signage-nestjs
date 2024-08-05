@@ -16,7 +16,10 @@ export class NotificationGateway implements OnGatewayConnection {
     client.emit('notification', 'Welcome to the notification service!');
   }
 
-  @SubscribeMessage('events')
+  //Đây là gì?
+  // Ở Postman cần phải làm gì để test được hàm này?
+
+  @SubscribeMessage('message')
   handleEvent(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket,
@@ -32,5 +35,9 @@ export class NotificationGateway implements OnGatewayConnection {
       data,
     };
     this.server.emit('data_change', message);
+  }
+
+  emitUpdateFrontend(): void {
+    this.server.emit('update_frontend');
   }
 }
