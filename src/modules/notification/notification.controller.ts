@@ -1,6 +1,7 @@
-import { Controller, Post, UseGuards } from '@nestjs/common';
+import { Controller, HttpCode, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { NotificationGateway } from './notification.gateway';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
+import { FormatResponseInterceptor } from 'src/shared/interceptors/format_response.interceptor';
 
 @Controller('notification')
 export class NotificationController {
@@ -8,10 +9,12 @@ export class NotificationController {
     private readonly notificationGateway: NotificationGateway
   ) { }
 
-  @Post()
+  @Post('/web-content-update')
   @UseGuards(AuthGuard)
+  @HttpCode(200)
+  @UseInterceptors(FormatResponseInterceptor)
   notification() {
     this.notificationGateway.emitUpdateFrontend();
-    return 'Front-end update notification sent';
+    return 'Web content update notification sent';
   }
 }
