@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { IBasicService } from 'src/shared/interfaces/basic_service.interface';
 import { Album } from './schema/album.schema';
 import mongoose, { HydratedDocument, Model, Types } from 'mongoose';
@@ -20,7 +20,7 @@ export class AlbumService implements IBasicService<Album> {
 
   async create(data: Album) {
     data.media = data.media.map(file => {
-      return { ...file, _id: new Types.ObjectId() }
+      return { ...file, _id: new Types.ObjectId() } as MediaDocument
     });
     const album = new this.albumModel(data);
     await album.save();
@@ -74,7 +74,7 @@ export class AlbumService implements IBasicService<Album> {
     if (!newFiles.length) {
       throw new Error('No new files to add');
     }
-    
+
     newFiles = newFiles.map(file => {
       return { ...file, _id: new Types.ObjectId() }
     })
@@ -124,15 +124,38 @@ export class AlbumService implements IBasicService<Album> {
     return updatedAlbum;
   }
 
-  async modify(query: Object, data: Partial<Album>) {
-    const milestone = await this.albumModel.findOneAndUpdate(query, data, { new: true });
-    return milestone;
+  async setHighlightItem(filterQuery: Object, highlightItemId: mongoose.Types.ObjectId) {
+    filterQuery['media._id'] = highlightItemId;
+    console.log(filterQuery);
+    
+    // Find the album using the filter query
+    const album = await this.albumModel.findOne(filterQuery);
+    if (!album) {
+      throw new BadRequestException('Album not found');
+    }
+
+    const item = album.media.find(media => media._id.equals(highlightItemId));
+    const isHighlight = !item.isHighlight;
+
+    await this.albumModel.findOneAndUpdate(filterQuery, {
+      $set: {
+        'media.$.isHighlight': isHighlight
+      }
+    });
+
+    const updatedAlbum = await this.tranformToDetaiData(filterQuery);
+    return updatedAlbum;
   }
 
+  async modify(query: Object, data: Partial<Album>) {
+      const milestone = await this.albumModel.findOneAndUpdate(query, data, { new: true });
+      return milestone;
+    }
+
   async remove(query: Object) {
-    const milestone = await this.albumModel.findOneAndDelete(query);
-    return milestone;
-  }
+      const milestone = await this.albumModel.findOneAndDelete(query);
+      return milestone;
+    }
 
   private async tranformToDetaiData(conditional: Object): Promise<HydratedDocument<Album>> {
     return await this.albumModel.aggregate(

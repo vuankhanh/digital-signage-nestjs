@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
 import { IMedia } from "src/shared/interfaces/media.interface";
-import { Media } from "./media.schema";
+import { Media, MediaDocument } from "./media.schema";
 
 export type AlbumDocument = HydratedDocument<Album>;
 
@@ -17,9 +17,9 @@ export class Album {
   thumbnail: string;
 
   @Prop({
-    type: Array<Media>
+    type: Array<MediaDocument>
   })
-  media: Array<Media>;
+  media: Array<MediaDocument>;
 
   @Prop({
     type: String,
@@ -27,7 +27,7 @@ export class Album {
   })
   relativePath: string;
 
-  constructor(thumbnail: string, media: Array<IMedia>, relativePath: string) {
+  constructor(thumbnail: string, media: Array<MediaDocument>, relativePath: string) {
     this.thumbnail = thumbnail;
     this.media = media;
     this.relativePath = relativePath;

@@ -29,6 +29,12 @@ export class Media implements IMedia {
   name: string;
 
   @Prop({
+    type: Boolean,
+    default: false
+  })
+  isHighlight?: boolean;
+
+  @Prop({
     type: String
   })
   description: string;

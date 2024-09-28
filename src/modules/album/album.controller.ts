@@ -14,10 +14,13 @@ import { Request } from 'express';
 import { memoryStorageMulterOptions } from 'src/constants/file.constanst';
 import { ChangeUploadfilesNamePipe } from 'src/shared/pipes/change-uploadfile-name.pipe';
 import { DiskStoragePipe } from 'src/shared/pipes/disk-storage.pipe';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { ParseObjectIdArrayPipe } from 'src/shared/pipes/parse_objectId_array.pipe';
 import { NotificationGateway } from '../notification/notification.gateway';
 import { AlbumModifyItemIndexChangeDto, AlbumModifyRemoveFilesDto } from './dto/album_modify.dto';
+import { MongoIdDto } from 'src/shared/dto/mongodb.dto';
+import { ObjectId } from 'mongodb';
+import { MediaDocument } from './schema/media.schema';
 
 @Controller('album')
 export class AlbumController {
@@ -49,10 +52,12 @@ export class AlbumController {
 
     const mainMedia = medias[body.isMain] || medias[0];
     const thumbnail = mainMedia.thumbnailUrl;
-
+    const newMedias = medias.map(file => {
+      return { ...file, _id: new Types.ObjectId() } as MediaDocument
+    })
     const albumDoc: Album = new Album(
       thumbnail,
-      medias,
+      newMedias,
       relativePath
     )
     const createdAlbum = await this.albumService.create(albumDoc);
@@ -103,6 +108,21 @@ export class AlbumController {
     this.notificationGateway.emitDataChange('album', 'modify', updatedAlbums);
     return updatedAlbums;
   }
+
+  @Patch('set-highlight-item')
+  @UseGuards(AuthGuard)
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(
+    FormatResponseInterceptor
+  )
+  async setHightlightItem(
+    @Body() body: MongoIdDto,
+  ) {
+    const id = new mongoose.Types.ObjectId(body.id);
+    const updatedAlbums = await this.albumService.setHighlightItem({}, id);
+    return updatedAlbums;
+  }
+  
 
   @Delete()
   @UseGuards(AuthGuard, ValidateModifyAlbumGuard)
