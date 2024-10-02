@@ -93,9 +93,6 @@ jobs:
         echo "REFRESH_TOKEN_LIFE=${{ secrets.REFRESH_TOKEN_LIFE }}" >> $DEPLOY_DIR/.env
         echo "REFRESH_TOKEN_SECRET=\"${{ secrets.REFRESH_TOKEN_SECRET }}\"" >> $DEPLOY_DIR/.env
 
-    - name: Set HOME environment variable
-      run: echo "HOME=/root" >> $GITHUB_ENV
-
     - name: Check and start pm2 process
       run: |
         PROJECT_NAME=$(node -p "require('./package.json').name")
@@ -103,8 +100,8 @@ jobs:
         cd $DEPLOY_DIR
         RUNNING=$(pm2 list | grep -c $PROJECT_NAME)
         if [ "${RUNNING}" -ne 0 ]; then
-          pm2 restart $PROJECT_NAME
+          echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S pm2 restart $PROJECT_NAME
         else
-          pm2 start "npm run start:prod:linux" --name $PROJECT_NAME
+          echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S pm2 start "npm run start:prod:linux" --name $PROJECT_NAME
         fi
-        pm2 save
+        echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S pm2 save
