@@ -101,10 +101,10 @@ jobs:
         PROJECT_NAME=$(node -p "require('./package.json').name")
         DEPLOY_DIR="/var/www/back-end/$PROJECT_NAME"
         cd $DEPLOY_DIR
-        RUNNING=$(sudo pm2 list | grep -c $PROJECT_NAME)
+        RUNNING=$(echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S pm2 list | grep -c $PROJECT_NAME)
         if [ "${RUNNING}" -ne 0 ]; then
-          sudo pm2 restart $PROJECT_NAME
+          echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S pm2 restart $PROJECT_NAME
         else
-          sudo pm2 start "npm run start:prod:linux" --name $PROJECT_NAME
+          echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S pm2 start "npm run start:prod:linux" --name $PROJECT_NAME
         fi
-        sudo pm2 save
+        echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S pm2 save
