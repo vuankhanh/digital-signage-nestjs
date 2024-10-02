@@ -93,6 +93,9 @@ jobs:
         echo "REFRESH_TOKEN_LIFE=${{ secrets.REFRESH_TOKEN_LIFE }}" >> $DEPLOY_DIR/.env
         echo "REFRESH_TOKEN_SECRET=\"${{ secrets.REFRESH_TOKEN_SECRET }}\"" >> $DEPLOY_DIR/.env
 
+    - name: Set HOME environment variable
+      run: echo "HOME=/root" >> $GITHUB_ENV
+
     - name: Check and start pm2 process
       run: |
         PROJECT_NAME=$(node -p "require('./package.json').name")
