@@ -1,0 +1,107 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: [self-hosted, Linux, X64, production]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: npm run build
+
+    - name: Check and create Back-End folder
+      run: |
+        DEPLOY_DIR="/var/www/back-end"
+        if [ -d "$DEPLOY_DIR" ]; then
+          echo "Directory exists."
+          echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S chown -R $USER:$USER $DEPLOY_DIR
+        else
+          echo "Directory does not exist."
+          echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S mkdir -p $DEPLOY_DIR
+          echo "${{ secrets.ROOT_CYCLING_JOURNEY_CLOUD }}" | sudo -S chown -R $USER:$USER $DEPLOY_DIR
+        fi
+
+    - name: Check and replace files
+      run: |
+        PROJECT_NAME=$(node -p "require('./package.json').name")
+        DEPLOY_DIR="/var/www/back-end/$PROJECT_NAME"
+        if [ -d "$DEPLOY_DIR" ]; then
+          echo "Directory exists, deleting..."
+          rm -rf "$DEPLOY_DIR/dist"
+          rm -rf "$DEPLOY_DIR/node_modules"
+          rm -f "$DEPLOY_DIR/package.json"
+          rm -f "$DEPLOY_DIR/package-lock.json"
+          rm -f "$DEPLOY_DIR/.env"
+
+          echo "Directory exists, copying..."
+          cp -r dist $DEPLOY_DIR
+          cp package.json $DEPLOY_DIR
+          cp package-lock.json $DEPLOY_DIR
+
+        else
+          echo "Directory does not exist."
+          mkdir -p $DEPLOY_DIR
+          cp -r dist $DEPLOY_DIR
+          cp package.json $DEPLOY_DIR
+          cp package-lock.json $DEPLOY_DIR
+        fi
+
+    - name: Install production dependencies
+      run: |
+        PROJECT_NAME=$(node -p "require('./package.json').name")
+        DEPLOY_DIR="/var/www/back-end/$PROJECT_NAME"
+        cd $DEPLOY_DIR
+        npm install --only=production
+    
+    - name: Create .env file
+      run: |
+        PROJECT_NAME=$(node -p "require('./package.json').name")
+        DEPLOY_DIR="/var/www/back-end/$PROJECT_NAME"
+        echo "Creating .env file"
+        echo "ACCESS_TOKEN_LIFE=${{ secrets.ACCESS_TOKEN_LIFE }}" >> $DEPLOY_DIR/.env
+        echo "ACCESS_TOKEN_SECRET=\"${{ secrets.ACCESS_TOKEN_SECRET }}\"" >> $DEPLOY_DIR/.env
+        echo "DEV_APP_PORT=${{ secrets.DEV_APP_PORT }}" >> $DEPLOY_DIR/.env
+        echo "DEV_DB_HOST=${{ secrets.DEV_DB_HOST }}" >> $DEPLOY_DIR/.env
+        echo "DEV_DB_NAME=${{ secrets.DEV_DB_NAME }}" >> $DEPLOY_DIR/.env
+        echo "DEV_DB_PORT=${{ secrets.DEV_DB_PORT }}" >> $DEPLOY_DIR/.env
+        echo "DEV_FRONTEND_HOST=${{ secrets.DEV_FRONTEND_HOST }}" >> $DEPLOY_DIR/.env
+        echo "DEV_FRONTEND_PORT=${{ secrets.DEV_FRONTEND_PORT }}" >> $DEPLOY_DIR/.env
+        echo "DEV_FRONTEND_PROTOCOL=${{ secrets.DEV_FRONTEND_PROTOCOL }}" >> $DEPLOY_DIR/.env
+        echo "FB_APP_CODE_SECRET=${{ secrets.FB_APP_CODE_SECRET }}" >> $DEPLOY_DIR/.env
+        echo "FB_APP_ID=${{ secrets.FB_APP_ID }}" >> $DEPLOY_DIR/.env
+        echo "FB_USER_ID=${{ secrets.FB_USER_ID }}" >> $DEPLOY_DIR/.env
+        echo "FILE_FOLDER=${{ secrets.FILE_FOLDER }}" >> $DEPLOY_DIR/.env
+        echo "PRO_APP_PORT=${{ secrets.PRO_APP_PORT }}" >> $DEPLOY_DIR/.env
+        echo "PRO_DB_HOST=${{ secrets.PRO_DB_HOST }}" >> $DEPLOY_DIR/.env
+        echo "PRO_DB_NAME=${{ secrets.PRO_DB_NAME }}" >> $DEPLOY_DIR/.env
+        echo "PRO_DB_PORT=${{ secrets.PRO_DB_PORT }}" >> $DEPLOY_DIR/.env
+        echo "REFRESH_TOKEN_LIFE=${{ secrets.REFRESH_TOKEN_LIFE }}" >> $DEPLOY_DIR/.env
+        echo "REFRESH_TOKEN_SECRET=\"${{ secrets.REFRESH_TOKEN_SECRET }}\"" >> $DEPLOY_DIR/.env
+
+    - name: Check and start pm2 process
+      run: |
+        PROJECT_NAME=$(node -p "require('./package.json').name")
+        DEPLOY_DIR="/var/www/back-end/$PROJECT_NAME"
+        cd $DEPLOY_DIR
+        RUNNING=$(pm2 list | grep -c $PROJECT_NAME)
+        if [ "${RUNNING}" -ne 0 ]; then
+          pm2 restart $PROJECT_NAME
+        else
+          pm2 start "npm run start:prod:linux" --name $PROJECT_NAME
+        fi
+        pm2 save
