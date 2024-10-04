@@ -40,4 +40,8 @@ export class NotificationGateway implements OnGatewayConnection {
   emitUpdateFrontend(): void {
     this.server.emit('update_frontend');
   }
+
+  emitServiceReloadApplication(): void {
+    this.server.emit('reload_marketing4than.service');
+  }
 }
