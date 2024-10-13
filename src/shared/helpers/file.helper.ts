@@ -7,8 +7,8 @@ export class FileHelper {
         const mediaUrl = mediaUrls[i];
         const url = rootPath + '/' + mediaUrl.url;
         const thumbnailUrl = rootPath +'/' +mediaUrl.thumbnailUrl;
-        await FileUtil.remove(url);
-        await FileUtil.remove(thumbnailUrl);
+        await FileUtil.remove(url).catch(error => console.log(error));
+        await FileUtil.remove(thumbnailUrl).catch(error => console.log(error));
       }
       return Promise.resolve();
     } catch (error) {

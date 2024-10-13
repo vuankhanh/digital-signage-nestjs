@@ -10,7 +10,7 @@ export class ImageConverterUtil {
     if(!file.buffer) return Promise.reject('File buffer is empty');
     return await sharp(file.buffer)
     .rotate()
-    .resize(size.width, size.height)
+    .resize({ height: size.height })
     .webp()
     .toBuffer();
   }
