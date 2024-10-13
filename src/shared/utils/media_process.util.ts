@@ -36,7 +36,7 @@ export class MediaProcessUtil {
     const newThumbnailFile: Express.Multer.File = {
       ...file,
       originalname: [path.parse(file.originalname).name+'-thumbnail', imageTypes.webp.extension].join('.'),
-      buffer: await VideoConverterUtil.generateThumbnail(file.buffer),
+      buffer: await VideoConverterUtil.generateThumbnail(file.buffer).catch(error => null),
       mimetype: imageTypes.webp.type,
     };
   
