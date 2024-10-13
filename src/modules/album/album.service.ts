@@ -7,12 +7,18 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IMedia } from 'src/shared/interfaces/media.interface';
 import { Media, MediaDocument } from './schema/media.schema';
 import { SortUtil } from 'src/shared/utils/sort_util';
+import { FileHelper } from 'src/shared/helpers/file.helper';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AlbumService implements IBasicService<Album> {
+  private albumFoler: string;
   constructor(
-    @InjectModel(Album.name) private albumModel: Model<Album>
-  ) { }
+    @InjectModel(Album.name) private albumModel: Model<Album>,
+    private configService: ConfigService
+  ) {
+    this.albumFoler = this.configService.get('folder.album');
+  }
 
   async checkExistAlbum(query: Object) {
     return await this.albumModel.countDocuments(query);
@@ -63,8 +69,8 @@ export class AlbumService implements IBasicService<Album> {
   }
 
   async replace(query: Object, data: Album) {
-    const milestone = await this.albumModel.findOneAndUpdate(query, data, { new: true });
-    return milestone;
+    const album = await this.albumModel.findOneAndUpdate(query, data, { new: true });
+    return album;
   }
 
   async addNewFiles(
@@ -104,6 +110,12 @@ export class AlbumService implements IBasicService<Album> {
       }
     }
 
+    //Lọc ra danh sách file cục bộ cần xóa
+    await this.filterMediaItems(filesWillRemove).then(async mediaUrls => {
+      //Xóa file
+      await FileHelper.removeMediaFiles(this.albumFoler, mediaUrls);
+    });
+
     await this.albumModel.findOneAndUpdate(filterQuery, updateQuery, { safe: true, new: true });
 
     const album = await this.tranformToDetaiData(filterQuery);
@@ -126,8 +138,6 @@ export class AlbumService implements IBasicService<Album> {
 
   async setHighlightItem(filterQuery: Object, highlightItemId: mongoose.Types.ObjectId) {
     filterQuery['media._id'] = highlightItemId;
-    console.log(filterQuery);
-    
     // Find the album using the filter query
     const album = await this.albumModel.findOne(filterQuery);
     if (!album) {
@@ -148,13 +158,16 @@ export class AlbumService implements IBasicService<Album> {
   }
 
   async modify(query: Object, data: Partial<Album>) {
-      const milestone = await this.albumModel.findOneAndUpdate(query, data, { new: true });
-      return milestone;
+      const album = await this.albumModel.findOneAndUpdate(query, data, { new: true });
+      return album;
     }
 
   async remove(query: Object) {
-      const milestone = await this.albumModel.findOneAndDelete(query);
-      return milestone;
+      const album = await this.albumModel.findOneAndDelete(query);
+      if (album?.relativePath) {
+        await FileHelper.removeFolder(this.albumFoler, album.relativePath);
+      }
+      return album;
     }
 
   private async tranformToDetaiData(conditional: Object): Promise<HydratedDocument<Album>> {
@@ -182,6 +195,36 @@ export class AlbumService implements IBasicService<Album> {
       ]
     ).then(res => {
       return res[0]
+    });
+  }
+
+  async filterMediaItems(itemIds: Array<mongoose.Types.ObjectId | string>): Promise<Array<{ url: string, thumbnailUrl: string }>> {
+    return this.albumModel.aggregate([
+      { $match: {} },
+      {
+        $project: {
+          media: {
+            $filter: {
+              input: '$media',
+              as: 'item',
+              cond: { $in: ['$$item._id', itemIds.map(id => new Types.ObjectId(id))] }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          media: {
+            $map: {
+              input: '$media',
+              as: 'item',
+              in: { url: '$$item.url', thumbnailUrl: '$$item.thumbnailUrl' }
+            }
+          }
+        }
+      }
+    ]).then(res => {
+      return res[0] ? res[0].media : [];
     });
   }
 }
