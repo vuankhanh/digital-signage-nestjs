@@ -25,7 +25,7 @@ export default () => {
 
   const folder = {
     album: join(__dirname + '../../..', process.env.FILE_FOLDER, 'Album').replace(/\\/g, "/"),
-    icon: join(__dirname, '../../assets/icon/svg').replace(/\\/g, "/")
+    assets: join(__dirname + '../../..', process.env.ASSETS_FOLDER).replace(/\\/g, "/"),
   }
 
   const config = process.env.NODE_ENV?.trim() === 'pro' ? pro : dev;
