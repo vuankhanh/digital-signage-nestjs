@@ -127,7 +127,7 @@ export class AlbumService implements IBasicService<Album> {
     if (!album) {
       throw new Error('Album not found');
     }
-
+    album.media = album.media.filter(media => media);
     album.media = SortUtil.sortDocumentArrayByIndex<Media>(album.media as Array<MediaDocument>, itemIndexChanges);
 
     await album.save();
@@ -143,7 +143,7 @@ export class AlbumService implements IBasicService<Album> {
     if (!album) {
       throw new BadRequestException('Album not found');
     }
-
+    album.media = album.media.filter(media => media);
     const item = album.media.find(media => media._id.equals(highlightItemId));
     const isHighlight = !item.isHighlight;
 
