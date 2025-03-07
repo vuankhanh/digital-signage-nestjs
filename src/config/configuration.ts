@@ -28,7 +28,22 @@ export default () => {
     assets: join(__dirname + '../../..', process.env.ASSETS_FOLDER).replace(/\\/g, "/"),
   }
 
+  const storeCoordinates = {
+    name: process.env.BEP4THAN_LOCATION_NAME,
+    lat: process.env.BEP4THAN_LOCATION_LAT,
+    lng: process.env.BEP4THAN_LOCATION_LON
+  };
+
+  const  openWeather = {
+    url: process.env.OPENWEATHERMAP_API_URL,
+    apiKey: process.env.OPENWEATHERMAP_API_KEY,
+    lang: process.env.OPENWEATHERMAP_LANG || 'vi',
+    units: process.env.OPENWEATHERMAP_UNITS || 'metric',
+    exclude: process.env.OPENWEATHERMAP_EXCLUDE || 'current,minutely,daily,alerts',
+    iconUrl: process.env.OPENWEATHERMAP_URL_ICON
+  }
+
   const config = process.env.NODE_ENV?.trim() === 'pro' ? pro : dev;
 
-  return { ...config, folder };
+  return { ...config, folder, storeCoordinates, openWeather };
 }

@@ -7,7 +7,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
   const configService = app.get(ConfigService);
   const staticPath = configService.get('folder.album');
-  console.log(`Static path is ${staticPath}`);
 
   app.enableCors();
   app.setGlobalPrefix('api');
@@ -15,7 +14,7 @@ async function bootstrap() {
     prefix: '/static/',
   });
   
-  const port = AppModule.port || 3002;
+  const port = AppModule.port || 3003;
   console.log(`App is running on port ${port}`);
   await app.listen(port);
 }

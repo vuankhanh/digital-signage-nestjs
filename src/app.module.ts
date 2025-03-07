@@ -11,6 +11,7 @@ import { AlbumModule } from './modules/album/album.module';
 import { LogoModule } from './modules/logo/logo.module';
 import { HightlightMarketingModule } from './modules/hightlight-marketing/hightlight-marketing.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { TaskModule } from './modules/task/task.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { NotificationModule } from './modules/notification/notification.module';
     AlbumModule,
     LogoModule,
     HightlightMarketingModule,
-    NotificationModule
+    NotificationModule,
+    TaskModule
   ],
   controllers: []
 })

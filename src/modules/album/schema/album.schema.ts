@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
-import { IMedia } from "src/shared/interfaces/media.interface";
-import { Media, MediaDocument } from "./media.schema";
+import { MediaDocument } from "./media.schema";
 
 export type AlbumDocument = HydratedDocument<Album>;
 

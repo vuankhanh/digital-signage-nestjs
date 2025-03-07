@@ -19,7 +19,6 @@ import { ParseObjectIdArrayPipe } from 'src/shared/pipes/parse_objectId_array.pi
 import { NotificationGateway } from '../notification/notification.gateway';
 import { AlbumModifyItemIndexChangeDto, AlbumModifyRemoveFilesDto } from './dto/album_modify.dto';
 import { MongoIdDto } from 'src/shared/dto/mongodb.dto';
-import { ObjectId } from 'mongodb';
 import { MediaDocument } from './schema/media.schema';
 
 @Controller('album')
